@@ -4,9 +4,30 @@
 require('./config/config');
 
 const express = require('express')
-var bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 const app = express();
+
+/**
+ *  Conexión a base de datos con mongoose
+ */
+mongoose.connect(process.env.URLDB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex:true,
+    useFindAndModify: false
+}, (err, res)=>{
+    if (err) throw err;
+    console.log('base de datos ONLINE!');
+});
+
+// mongoose.connect('mongodb://localhost:27017/cafe', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// })
+// .then(connect => console.log('Conectado a la base de datos!'))
+// .catch(err => console.log('Hubo un problema de conexión a BD'));
 
 /**
  *  body parser middleware
@@ -16,58 +37,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-app.get('/', function (req, res) {
-    res.json('Hello World')
-});
-
 /**
- *  Get usuario
+ *  Importar y usar la ruta de usuarios
  */
-app.get('/usuario', function (req, res) {
-    res.json('get usuario');
-});
-
-/**
- *  Post usuario
- */
-app.post('/usuario', function (req, res) {
-    let nombre = req.body.nombre;
-    let edad = req.body.edad;
-    let body = req.body;
-
-    // simulando falla en información recibida
-    if (body.nombre === undefined) {
-        res.status(400).json({
-            ok: false,
-            mensaje: "nombre es necesario"
-        });
-    } else {
-        res.json({
-            http: 'post',
-            nombre,
-            edad,
-            body
-        });
-    }
-
-});
-
-/**
- *  Put usuario
- */
-app.put('/usuario/:id', function (req, res) {
-    let id = req.params.id;
-    res.json({
-        id
-    });
-});
-
-/**
- *  Delete usuario
- */
-app.delete('/usuario', function (req, res) {
-    res.json('delete usuario');
-});
+app.use( require('./rutas/usuario'));
 
 const port = process.env.PORT;
 app.listen(port, () => {
